@@ -37,9 +37,12 @@
   :author "Pascal J. Bourguignon"
   :version "1.4.0"
   :license "AGPL3"
-  :depends-on ("com.informatimago.common-lisp.cesarum"
+  :depends-on ("com.informatimago.small-cl-pgms.nickserv"
+               "com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.interactive" ; date uptime
-               "cl-irc" "cl-json" "drakma" "split-sequence" "cl-ppcre")
+               "cl-irc"
+               "cl+ssl"  ; irc:connect :connection-security :ssl
+               "cl-json" "drakma" "split-sequence" "cl-ppcre")
   :components ((:file "botihn")))
 
 ;;;; THE END ;;;;

@@ -1,0 +1,55 @@
+;;;; -*- mode:lisp;coding:utf-8 -*-
+;;;;**************************************************************************
+;;;;FILE:               generate-application.lisp
+;;;;LANGUAGE:           Common-Lisp
+;;;;SYSTEM:             Common-Lisp
+;;;;USER-INTERFACE:     NONE
+;;;;DESCRIPTION
+;;;;
+;;;;    Save the botergo executable.
+;;;;
+;;;;AUTHORS
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
+;;;;MODIFICATIONS
+;;;;    2026-08-12 <PJB> Created.
+;;;;BUGS
+;;;;LEGAL
+;;;;    AGPL3
+;;;;
+;;;;    Copyright Pascal J. Bourguignon 2026 - 2026
+;;;;
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;**************************************************************************
+;; NOTE: do NOT (setf *readtable* (copy-readtable nil)) here: that installs a
+;; standard readtable globally, stripping the implementation extensions, and
+;; ccl then fails to compile usocket's own CCL backend, which reads #_gethostname.
+(in-package "COMMON-LISP-USER")
+(progn (format t "~%;;; Loading quicklisp.~%") (finish-output) (values))
+(load #P"~/quicklisp/setup.lisp")
+(ql:register-local-projects)
+
+(progn (format t "~%;;; Loading botergo.~%") (finish-output) (values))
+(push (make-pathname :name nil :type nil :version nil
+                     :defaults *load-truename*) asdf:*central-registry*)
+
+(ql:quickload :com.informatimago.small-cl-pgms.botergo)
+
+(progn (format t "~%;;; Saving botergo.~%") (finish-output) (values))
+;; This doesn't return.
+#+ccl (ccl::save-application
+       "botergo"
+       :mode #o755 :prepend-kernel t
+       :toplevel-function (function com.informatimago.small-cl-pgms.botergo:main)
+       :init-file nil
+       :error-handler :quit)

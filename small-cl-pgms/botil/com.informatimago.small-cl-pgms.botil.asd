@@ -38,10 +38,15 @@
   :author "Pascal J. Bourguignon"
   :version "1.0.0"
   :license "AGPL3"
-  :depends-on ("com.informatimago.rdp"
+  :depends-on ("com.informatimago.small-cl-pgms.nickserv"
+               "com.informatimago.rdp"
                "com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.interactive" ; date uptime
-               "cl-irc" "cl-json" "drakma" "split-sequence"
+               "com.informatimago.clext.queue" ; botil.lisp :USEs it
+               "cl-irc"
+               "cl+ssl"  ; irc:connect :connection-security :ssl
+               "cl-json" "drakma" "split-sequence"
+               "bordeaux-threads"              ; botil.lisp :USEs it
                "cl-date-time-parser" "cl-ppcre" "cl-smtp"
                "montezuma")
   :components ((:file "botil")))

@@ -66,6 +66,19 @@ Licensed under the AGPL3.
 
 (defvar *server*   "irc.libera.chat"
   "The fqdn of the IRC server.")
+(defvar *connection-security* :ssl
+  "Either :SSL (port 6697) or :NONE (port 6667).
+
+Note: cl-irc 0.9.2 hands the raw octet socket stream to the connection
+when :NONE is used, and writing a character to it then fails with
+\"#\\: doesn't match array element type\"; only the :SSL path wraps the
+stream.  Libera.Chat wants TLS anyway.")
+(defvar *port* 6697
+  "The port of the IRC server.
+
+Note: do not leave this to cl-irc's :DEFAULT.  cl-irc 0.9.2 has
+:SSL 6679 in *DEFAULT-IRC-SERVER-PORT* -- a typo for 6697 -- and the
+connection then hangs in SYN_SENT.")
 (defvar *nickname* "botihn"
   "The nickname of the botihn user.")
 (defvar *channel*  "#hn"
@@ -76,6 +89,13 @@ Licensed under the AGPL3.
 (defvar *connection* nil
   "The current IRC server connection.")
 (defvar *botpass*  "1234")
+
+(defvar *administrators* '("pjb")
+  "The nicks allowed to use the self-registry command.")
+
+(defvar *nickserv-password-file* #P"/usr/local/var/botihn/nickserv-password.txt"
+  "Where the NickServ password the bot generated for itself is kept.
+See the self-registry command, and the NICKSERV system.")
 
 
 (defvar *blacklist* '()
@@ -261,7 +281,23 @@ Updates the *LAST-STORY* ID."
   (setf *server*   (or (uiop:getenv "BOTIHN_SERVER")    *server*)
         *nickname* (or (uiop:getenv "BOTIHN_NICKNAME")  *nickname*)
         *channel*  (or (uiop:getenv "BOTIHN_CHANNEL")   *channel*)
-        *botpass*  (or (uiop:getenv "BOTIHN_BOTPASS")   *botpass*)))
+        *botpass*  (or (uiop:getenv "BOTIHN_BOTPASS")   *botpass*)
+        *connection-security* (let ((security (uiop:getenv "BOTIHN_SECURITY")))
+                                (cond ((null security) *connection-security*)
+                                      ((string-equal security "none") :none)
+                                      (t :ssl)))
+        *port*     (let ((port (uiop:getenv "BOTIHN_PORT")))
+                     (if port
+                         (parse-integer port :junk-allowed t)
+                         (if (eq *connection-security* :ssl) 6697 6667)))
+        *administrators* (let ((admins (uiop:getenv "BOTIHN_ADMINISTRATORS")))
+                           (if admins
+                               (split-sequence #\, admins :remove-empty-subseqs t)
+                               *administrators*))
+        *nickserv-password-file* (let ((file (uiop:getenv "BOTIHN_NICKSERV_PASSWORD_FILE")))
+                                   (if file
+                                       (pathname file)
+                                       *nickserv-password-file*))))
 
 (defun say (&rest args)
   (format t "~&~{~A~^ ~}~%" args)
@@ -277,6 +313,93 @@ Updates the *LAST-STORY* ID."
                                 :remove-empty-subseqs t))
     (answer line)))
 
+
+;;; NickServ ;;;
+
+(defun administrator-p (nick)
+  (member nick *administrators* :test (function string-equal)))
+
+(defvar *nickserv-requester* nil
+  "(NICK . TIME) of the last self-registry, so that NickServ's verdict
+reaches whoever asked instead of only the log.")
+
+(defparameter *nickserv-relay-seconds* 120)
+
+(defun notice-hook (message)
+  "Logs the notices of NickServ, and forwards them to whoever just asked
+for a self-registry -- that is where NickServ says whether it worked.
+
+Note that hooking this class at all stops cl-irc from reporting notices
+as unhandled events, so without the SAY below they would go unrecorded."
+  (let ((source (source message))
+        (text   (or (second (arguments message)) ""))
+        (requester *nickserv-requester*))
+    (when (string-equal source nickserv:*nickserv*)
+      (say (format nil "<~A> ~A" source text)))
+    (when (and (string-equal source nickserv:*nickserv*)
+               requester
+               (< (- (get-universal-time) (cdr requester)) *nickserv-relay-seconds*)
+               (plusp (length (string-trim " " text))))
+      (let ((*requester-nick* (car requester)))
+        (answer "<~A> ~A" source text))))
+  t)
+
+(defun tell-nickserv (text)
+  (privmsg *connection* nickserv:*nickserv* text))
+
+(defun nickserv-password ()
+  (nickserv:load-password *nickserv-password-file*))
+
+(defun identify-with-nickserv ()
+  "Identifies with NickServ, when the bot registered itself earlier."
+  (let ((password (nickserv-password)))
+    (when password
+      (say "Identifying with NickServ.")
+      (tell-nickserv (nickserv:identify-message *nickname* password))
+      ;; Let the service answer before we join: +r channels need it.
+      (sleep 5))))
+
+(defun self-registry (arguments)
+  "Registers the bot's own nick with NickServ, on an administrator's order.
+See the NICKSERV system for the exchange this is a step of."
+  (if (not (administrator-p *requester-nick*))
+      (answer "Only my administrators may do that.")
+      (multiple-value-bind (action argument) (nickserv:parse-self-registry arguments)
+        (case action
+          ((:status)
+           (answer (if (nickserv:password-present-p *nickserv-password-file*)
+                       "I have a NickServ password, in ~A."
+                       "I have no NickServ password yet (~A)")
+                   *nickserv-password-file*))
+          ((:forget)
+           (answer (if (nickserv:forget-password *nickserv-password-file*)
+                       "Forgotten; you can register me again."
+                       "I had no password to forget.")))
+          ((:verify)
+           (setf *nickserv-requester* (cons *requester-nick* (get-universal-time)))
+           (tell-nickserv (nickserv:verify-message *nickname* argument))
+           (answer "Sent VERIFY to NickServ; watch its notices."))
+          ((:register)
+           (if (nickserv:password-present-p *nickserv-password-file*)
+               ;; One shot: registering again would only fail, and would
+               ;; overwrite the password we need to identify with.
+               (answer "I am already registered (password in ~A). ~
+                        Remove that file first if you really mean to redo it."
+                       *nickserv-password-file*)
+               (let ((password (nickserv:generate-password)))
+                 ;; Store before sending: a password we sent but lost would
+                 ;; leave the nick registered and us unable to identify.  If
+                 ;; the service refuses the REGISTER, "self-registry forget"
+                 ;; drops the password again.
+                 (nickserv:save-password *nickserv-password-file* password)
+                 (setf *nickserv-requester* (cons *requester-nick* (get-universal-time)))
+                 (tell-nickserv (nickserv:register-message password argument))
+                 (answer "Sent REGISTER to NickServ for ~A.  My password is in ~A.  ~
+                          Send me: self-registry verify <key>  with the key from the mail."
+                         argument *nickserv-password-file*))))
+          (otherwise
+           (answer "~A" (nickserv:self-registry-usage)))))))
+
 (defun msg-hook (message)
   "Answers to PRIVMSG sent directly to this bot."
   (let ((arguments        (arguments message))
@@ -286,8 +409,10 @@ Updates the *LAST-STORY* ID."
       (let ((words (split-sequence #\space (second arguments) :remove-empty-subseqs t)))
         (scase (first words)
                (("help")
-                (answer "Available commands: help version uptime sources blacklist")
+                (answer "Available commands: help version uptime sources blacklist self-registry")
                 (answer "Type:  blacklist help   for help on blacklist command."))
+               (("self-registry")
+                (self-registry (rest words)))
                (("version")
                 (answer "Version: ~A" *version*))
                (("uptime")
@@ -311,6 +436,26 @@ Updates the *LAST-STORY* ID."
                 (eliza words))))))
   t)
 
+
+(defvar *ignored-messages* 0
+  "Consecutive messages READ-MESSAGE-IGNORING-JUNK could not parse.")
+
+(defun read-message-ignoring-junk ()
+  "READ-MESSAGE, but one unusable message is not a dead connection.
+
+cl-irc 0.9.2 signals a plain error for every numeric reply it does not
+know -- Libera's 900 RPL_LOGGEDIN, sent right after IDENTIFY, is one, as
+parse-message.lisp passes 'no-such-reply as a format argument instead of
+signalling it -- and letting that reach the retry loop makes the bot
+reconnect every few seconds."
+  (handler-case (progn (read-message *connection*)
+                       (setf *ignored-messages* 0))
+    ((or stream-error end-of-file) (err) (error err))
+    (error (err)
+      (say (format nil "ignoring: ~A" err))
+      ;; Unless it never stops: then the connection really is bad.
+      (when (< 20 (incf *ignored-messages*))
+        (error err)))))
 
 (defun call-with-retry (delay thunk)
   "Calls THUNK repeatitively, reporting any error signaled,
@@ -355,8 +500,12 @@ and join to the *CHANNEL* where HackerNews are published."
             (catch :petites-gazongues
               (unwind-protect
                    (progn
-                     (setf *connection* (connect :nickname *nickname* :server *server*))
+                     (setf *connection* (connect :nickname *nickname* :server *server*
+                                                 :port *port*
+                                                 :connection-security *connection-security*))
                      (add-hook *connection* 'irc::irc-privmsg-message 'msg-hook)
+                     (add-hook *connection* 'irc::irc-notice-message 'notice-hook)
+                     (identify-with-nickserv)
                      (join *connection* *channel*)
                      (monitor-initialize)
                      (loop
@@ -370,7 +519,7 @@ and join to the *CHANNEL* where HackerNews are published."
                                                (format *error-output* "~%~A~%" err))))
                                    (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message))))
                                  (incf next-time *period*))
-                               (read-message *connection*) #|there's a 10 s timeout in here.|#)))
+                               (read-message-ignoring-junk))))
                 (when *connection*
                   (quit *connection*)
                   (setf *connection* nil))))))))))

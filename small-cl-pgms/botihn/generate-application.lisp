@@ -31,8 +31,9 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (setf *readtable* (copy-readtable nil)))
+;; NOTE: do NOT (setf *readtable* (copy-readtable nil)) here: that installs a
+;; standard readtable globally, stripping the implementation extensions, and
+;; ccl then fails to compile usocket's own CCL backend, which reads #_gethostname.
 (in-package "COMMON-LISP-USER")
 (progn (format t "~%;;; Loading quicklisp.~%") (finish-output) (values))
 (load #P"~/quicklisp/setup.lisp")
