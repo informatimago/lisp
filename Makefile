@@ -176,7 +176,7 @@ upload:
 .PHONY::upload
 
 README.md:README
-	pandoc -f rst -t markdown_github  -o README.md README
+	pandoc -f rst -t gfm -o README.md README
 
 README.html:README
 	( rst2html.py README > out.html && mv out.html README.html ) \
